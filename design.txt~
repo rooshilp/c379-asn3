@@ -1,0 +1,69 @@
+**** User Documentation
+
+In order to play the game, run the following command in terminal in the directory of the files within the tar file
+Make
+./asn3
+
+To play the game, use the n and m keys to move left and right respectively, the space key to fire the rocket and the Q key to quit.
+
+**** Developer Documentation
+
+** Code Structure
+
+MAIN
+The main function sets up curses for display, creates the threads for all of the objects and monitors keyboard input.
+
+CONFIGURATION
+setup - intializes the objects into their respective types. Index 0 is the launcher, index 1-MAXROC are the rockets and index MAXROC+1 to MAXTHR are the saucers. As well, setup draws the line at the bottom of the screen.
+
+SHOOTING
+fire - handles shooting by basing the rockets position based on the launchers and sets an index in objects of type rocket that is dead to alive. From here, animate detects alive rockets and animates their movements.
+
+RENDERING
+animate - responsible for calling all the draw and clear methods. Checks to see if an object is alive. If it is, it then moves the object. If the object is the launcher, it will only be moved if the launcher's location had changed from the move_launcher function. If the object is a saucer, it is incremented by one to move to the right of the screen. If the object is a rocket, it is moved upwards.
+draw_rocket - responsible for drawing the rocket
+draw_saucer - responsible for drawing the saucer
+draw_launcher - responsible for drawing the launcher
+clear_rocket - responsible for clearing the rocket
+clear_saucer -responsbile for clearing the saucer
+reset_rocket - responsbile for reseting the data in the now dead rocket
+reset_saucer - responsbile for reseting the data in the now dead saucer
+
+DATA STRUTURES
+There are three globals ints, score, losses and rockets, which correspond to ships shot down, ships escaped and rockets remaining, respectively.
+The object structure holds all objects (launcher, rockets and saucers)
+struct	object {
+	char *str;	/* the message */
+	int type;	/* 2 for turret, 1 for rocket, 0 for saucer */
+	int alive; 	/* is alive? */
+	int row;	/* the row     */
+	int col;	/* the column */
+	int delay;  /* delay in time units */
+	int lives;	/* +1 or -1	*/
+};
+
+str holds the str to be displayed
+type indicates its type
+alive indicates whether or not that object is alive
+row is the row the object is currently in
+col is the column the object is currently in
+delay is speed of movement for the object
+lives is the number of lives remaining on the object. THis only applies for the saucer.
+There is a global instance of the objects struct.
+
+** Threads
+
+The main thread is responsbile for setting up the game, creating all of the object threads and listening for keyboard inputs. The object threads are used to animate each individual object. Each object is given a type. Depending on the type, the animate function will perform different actions in order to animate the specific object type.
+
+** Critical Sections
+
+Critical sections include
+fire - rocket_move mutex, decrease global rocket
+print_stats - draw_object mutex lock because this uses the cursor to draw objects
+move_launcher - move_launcher mutex lock
+draw_launcher - draw_object mutex lock because this uses the cursor to draw objectsk
+draw_saucer - draw_object mutex lock because this uses the cursor to draw objects
+draw_rocket - draw_object mutex lock because this uses the cursor to draw objects
+clear_saucer - draw_object mutex lock because this uses the cursor to draw objects
+clear_rocket - draw_object mutex lock because this uses the cursor to draw objects
+check_collision - score_count mutex lock and rocket_move mutex lock 
